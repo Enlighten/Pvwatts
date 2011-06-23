@@ -69,7 +69,6 @@ class Pvwatts
   
   def prep_request(latitude, longitude, dc_rating, tilt, azimuth, derate, array_type, cost=0.0)
     Rails.logger.debug "calling pvwatts with: latitude: #{latitude}, longitude: #{longitude}, dc_rating: #{dc_rating}, tilt: #{tilt}, azimuth: #{azimuth}, dc_derate: #{derate}, cost: #{cost}, array_type: #{array_type}" if Object.const_defined?(:Rails)
-    shading = (shading == 0 ? 1 : shading / 100)
     { 'wsdl:key'        => api_key,
       'wsdl:latitude'   => latitude,
       'wsdl:longitude'  => longitude,
