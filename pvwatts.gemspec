@@ -4,14 +4,14 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = %q{pvwatts}
-  s.version = "0.1.0"
+  s.name = %q{pvwatts-ee}
+  s.version = "0.1.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.authors = ["Matt Aimonetti"]
-  s.date = %q{2011-03-06}
+  s.authors = ["Matt Aimonetti", "Brenda Strech"]
+  s.date = %q{2011-06-17}
   s.description = %q{Calculates the Performance of a Grid-Connected PV System.}
-  s.email = %q{mattaimonetti@gmail.com}
+  s.email = %q{bstrech@gmail.com}
   s.extra_rdoc_files = [
     "LICENSE.txt",
     "README.rdoc"
