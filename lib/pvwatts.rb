@@ -42,10 +42,9 @@ class Pvwatts
     keys = opts.keys 
     client = Savon::Client.new("http://pvwatts.nrel.gov/PVWATTS.asmx?WSDL")
     @latitude, @longitude = [opts[:latitude], opts[:longitude]]
-    @dc_rating, @tilt, @azimuth, @derate = opts[:dc_rating], opts[:tilt], opts[:azimuth], opts[:derate]
-    if @latitude.nil? || @longitude.nil? || @dc_rating.nil? || @tilt.nil? || @azimuth.nil? || @derate.nil?
-      raise ArgumentError, "passed -> latitude: #{@latitude}, longitude: #{@longitude}, dc_rating: #{@dc_rating}\
-      tilt: #{@tilt} azimuth: #{@azimuth} derate: #{@derate}"
+    @dc_rating, @tilt, @azimuth, @derate, @cost, @array_type  = opts[:dc_rating], opts[:tilt], opts[:azimuth], opts[:derate], opts[:cost], opts[:array_type]
+    unless @latitude &&  @longitude &&  @dc_rating && @tilt && @azimuth &&  @derate && @cost && @array_type 
+      raise ArgumentError, "passed -> latitude: #{@latitude}, longitude: #{@longitude}, dc_rating: #{@dc_rating}, tilt: #{@tilt}, azimuth: #{@azimuth}, derate: #{@derate}, cost: #{@cost}, array_type: #{@array_type}"
     end
     req = prep_request(@latitude, @longitude, @dc_rating, @tilt, @azimuth, @derate, @array_type, @cost)
     
@@ -67,7 +66,7 @@ class Pvwatts
   
   private
   
-  def prep_request(latitude, longitude, dc_rating, tilt, azimuth, derate, array_type, cost=0.0)
+  def prep_request(latitude, longitude, dc_rating, tilt, azimuth, derate, array_type, cost)
     Rails.logger.debug "calling pvwatts with: latitude: #{latitude}, longitude: #{longitude}, dc_rating: #{dc_rating}, tilt: #{tilt}, azimuth: #{azimuth}, dc_derate: #{derate}, cost: #{cost}, array_type: #{array_type}" if Object.const_defined?(:Rails)
     { 'wsdl:key'        => api_key,
       'wsdl:latitude'   => latitude,
