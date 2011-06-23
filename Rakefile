@@ -13,12 +13,12 @@ require 'jeweler'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://docs.rubygems.org/read/chapter/20 for more options
   gem.name = "pvwatts"
-  gem.homepage = "http://github.com/mattetti/pvwatts"
+  gem.homepage = "http://github.com/bstrech/pvwatts"
   gem.license = "MIT"
-  gem.summary = %Q{Wrapper around the http://www.nrel.gov/rredc/pvwatts/ web service API.}
+  gem.summary = %Q{Wrapper around the http://www.nrel.gov/rredc/pvwatts/ web service API. Forked from Matt Aimonetti.}
   gem.description = %Q{Calculates the Performance of a Grid-Connected PV System.}
-  gem.email = "mattaimonetti@gmail.com"
-  gem.authors = ["Matt Aimonetti"]
+  gem.email = "bstrech@gmail.com"
+  gem.authors = ["Brenda Strech"]
   # Include your dependencies below. Runtime dependencies are required when using your gem,
   # and development dependencies are only needed for development (ie running rake tasks, tests, etc)
   gem.add_runtime_dependency 'savon', '~> 0.7.6'

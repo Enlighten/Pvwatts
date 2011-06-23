@@ -13,7 +13,6 @@ require 'savon'
 class Pvwatts
   
   Savon::Request.log = false
-  DEFAULT_DERATE = 0.82
   
   attr_reader :api_key
   
@@ -30,11 +29,12 @@ class Pvwatts
   # @param [Hash] opts
   # @option opts [String, Float] :latitude Latitude coordinate of the location.
   # @option opts [String, Float] :longitude Longitude coordinate of the location.
-  # @option opts [String, Float] :dc_rating
-  # @option opts [String, Integer] :tilt
-  # @option opts [String, Integer] :orientation Orientation or azimuth value.
-  # @option opts [String, Integer] :shading A percentage value between 0 and 100.
-  #
+  # @option opts [String, Float] :dc_rating kW rating values 0.5 to 10000.0
+  # @option opts [String, Float] :tilt PV Array Lattitude tilt value 0 - 90
+  # @option opts [String, Integer] :azimuth azimuth value 0 - 360 (180 for Northern Hemisphere).
+  # @option opts [String, Float] :derate overall DC to AC derate factor values 0.10 - 0.96
+  # @option opts [String, Float] :cost electricity cost per kWh (US ¢/kWh)
+  # @options opts [String, Integer] :array_type 0=fixed tilt, 1=1-axis tracking, 2=2-axis tracking
   # @return [Hash] A hash with the yearly production with a key for each month and a 'year' key to represent the yearly value.
   #
   def yearly_production(opts={})
@@ -42,13 +42,12 @@ class Pvwatts
     keys = opts.keys 
     client = Savon::Client.new("http://pvwatts.nrel.gov/PVWATTS.asmx?WSDL")
     @latitude, @longitude = [opts[:latitude], opts[:longitude]]
-    @dc_rating, @tilt, @orientation = opts[:dc_rating], opts[:tilt], opts[:orientation]
-    @shading = opts[:shading]
-    if @latitude.nil? || @longitude.nil? || @dc_rating.nil? || @tilt.nil? || @orientation.nil? || @shading.nil?
+    @dc_rating, @tilt, @azimuth, @derate = opts[:dc_rating], opts[:tilt], opts[:azimuth], opts[:derate]
+    if @latitude.nil? || @longitude.nil? || @dc_rating.nil? || @tilt.nil? || @azimuth.nil? || @derate.nil?
       raise ArgumentError, "passed -> latitude: #{@latitude}, longitude: #{@longitude}, dc_rating: #{@dc_rating}\
-      tilt: #{@tilt} orientation: #{@orientation} shading: #{@shading}"
+      tilt: #{@tilt} azimuth: #{@azimuth} derate: #{@derate}"
     end
-    req = prep_request(@latitude, @longitude, @dc_rating, @tilt, @orientation, @shading)
+    req = prep_request(@latitude, @longitude, @dc_rating, @tilt, @azimuth, @derate, @array_type, @cost)
     
     response = client.get_pvwatts{|soap| soap.input = "GetPVWATTS"; soap.body = req }
     rdata = response.to_hash
@@ -68,20 +67,19 @@ class Pvwatts
   
   private
   
-  def prep_request(latitude, longitude, dc_rating, tilt, orientation, shading)
-    Rails.logger.debug "calling pvwatts with: latitude: #{latitude}, longitude: #{longitude}, dc_rating: #{dc_rating}, tilt: #{tilt}, orientation: #{orientation}, shading: #{shading}" if Object.const_defined?(:Rails)
+  def prep_request(latitude, longitude, dc_rating, tilt, azimuth, derate, array_type, cost=0.0)
+    Rails.logger.debug "calling pvwatts with: latitude: #{latitude}, longitude: #{longitude}, dc_rating: #{dc_rating}, tilt: #{tilt}, azimuth: #{azimuth}, dc_derate: #{derate}, cost: #{cost}, array_type: #{array_type}" if Object.const_defined?(:Rails)
     shading = (shading == 0 ? 1 : shading / 100)
     { 'wsdl:key'        => api_key,
       'wsdl:latitude'   => latitude,
       'wsdl:longitude'  => longitude,
       'wsdl:locationID' => '', 
       'wsdl:DCrating'   => dc_rating, 
-      # I will have to give this some thought, but .8 is a better number for now– it has todo with the shading and efficiency of inverters – we may need to pass efficiency data to get an accurate number along with the shading data (ie. how shaded the location is))
-      'wsdl:derate'     => (DEFAULT_DERATE * shading),
-      'wsdl:cost'       => 0.0,
-      'wsdl:mode'       => 0,
+      'wsdl:derate'     => derate,
+      'wsdl:cost'       => cost,
+      'wsdl:mode'       => array_type,
       'wsdl:tilt'       => tilt,
-      'wsdl:azimuth'    => orientation,
+      'wsdl:azimuth'    => azimuth,
       'wsdl:inoct'      => 45.0,
       'wsdl:pwrdgr'     => -0.005
     }

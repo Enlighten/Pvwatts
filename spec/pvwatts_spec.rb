@@ -3,12 +3,14 @@ require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 describe Pvwatts do
   
   before(:all) do
-    @pdata = Pvwatts.new(PVWATTS_SPEC_KEY).yearly_production(   :latitude    => 32.95850, 
+    @pdata = Pvwatts.new(PVWATTS_SPEC_KEY).yearly_production(:latitude    => 32.95850, 
                                               :longitude   => -117.12206, 
                                               :dc_rating   => 4.0, 
                                               :tilt        => 45, 
-                                              :orientation => 180,
-                                              :shading     => 0)
+                                              :azimuth => 180,
+                                              :derate     => 0.82,
+                                              :array_type=>0,
+                                              :cost=>0.1)
   end
   
   it "should fetch the yearly production data" do
