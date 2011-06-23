@@ -44,7 +44,7 @@ describe Pvwatts do
             @pdata.has_key?(key).should be_true
           end  
         end
-        @pdata["month"].should == month_to_string(i)
+        @pdata["month"].should == month_to_string(i+1)
         (@pdata["a_cenergy"] > 0).should be_true
         (@pdata["cost_saved"] > 0).should be_true
         (@pdata["solar"] > 0).should be_true
