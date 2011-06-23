@@ -63,7 +63,41 @@ class Pvwatts
     end
     @production_data
   end
-  
+  # Get information based on passed options.
+  #
+  # @param [Hash] opts
+  # @option opts [String, Float] :latitude Latitude coordinate of the location.
+  # @option opts [String, Float] :longitude Longitude coordinate of the location.
+  # @option opts [String, Float] :dc_rating kW rating values 0.5 to 10000.0
+  # @option opts [String, Float] :tilt PV Array Lattitude tilt value 0 - 90
+  # @option opts [String, Integer] :azimuth azimuth value 0 - 360 (180 for Northern Hemisphere).
+  # @option opts [String, Float] :derate overall DC to AC derate factor values 0.10 - 0.96
+  # @option opts [String, Float] :cost electricity cost per kWh (US ¢/kWh)
+  # @options opts [String, Integer] :array_type 0=fixed tilt, 1=1-axis tracking, 2=2-axis tracking
+  # @return [Hash] A hash with the yearly production with a key for each month and a 'year' key to represent the yearly value.
+  #
+  def get_stats(opts={})
+    Rails.logger.debug("pvwatts get_stats called") if Object.const_defined?(:Rails)
+    keys = opts.keys 
+    client = Savon::Client.new("http://pvwatts.nrel.gov/PVWATTS.asmx?WSDL")
+    @latitude, @longitude = [opts[:latitude], opts[:longitude]]
+    @dc_rating, @tilt, @azimuth, @derate, @cost, @array_type  = opts[:dc_rating], opts[:tilt], opts[:azimuth], opts[:derate], opts[:cost], opts[:array_type]
+    unless @latitude &&  @longitude &&  @dc_rating && @tilt && @azimuth &&  @derate && @cost && @array_type 
+      raise ArgumentError, "passed -> latitude: #{@latitude}, longitude: #{@longitude}, dc_rating: #{@dc_rating}, tilt: #{@tilt}, azimuth: #{@azimuth}, derate: #{@derate}, cost: #{@cost}, array_type: #{@array_type}"
+    end
+    req = prep_request(@latitude, @longitude, @dc_rating, @tilt, @azimuth, @derate, @array_type, @cost)
+    
+    response = client.get_pvwatts{|soap| soap.input = "GetPVWATTS"; soap.body = req }
+    rdata = response.to_hash
+    if rdata[:get_pvwatts_response] && rdata[:get_pvwatts_response][:get_pvwatts_result] && rdata[:get_pvwatts_response][:get_pvwatts_result][:pvwatt_sinfo]
+      @production_data = []
+      @pvwatt_info = rdata[:get_pvwatts_response][:get_pvwatts_result][:pvwatt_sinfo].compact
+      @production_data = @pvwatt_info
+    else
+      raise 'Problem with the pvwatts response'
+    end
+    @production_data
+  end
   private
   
   def prep_request(latitude, longitude, dc_rating, tilt, azimuth, derate, array_type, cost)
