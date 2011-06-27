@@ -40,14 +40,14 @@ describe Pvwatts do
       @pdata.each_with_index do |data, i|
         @pdata.is_a?(Hash).should be_true
         if i == 0
-          ["array_type","array_tilt","location_id","a_crating","power_degredataion","inoct","latitude","d_crating","longitude","currency","electric_cost","array_azimuth","message","a_ctod_cderate"].each do |key|
+          ["array_type","array_tilt","location_id","a_crating","power_degredation","inoct","latitude","d_crating","longitude","currency","electric_cost","array_azimuth","message","d_cto_a_cderate"].each do |key|
             @pdata.has_key?(key).should be_true
           end  
         end
         @pdata["month"].should == month_to_string(i+1)
-        (@pdata["a_cenergy"] > 0).should be_true
-        (@pdata["cost_saved"] > 0).should be_true
-        (@pdata["solar"] > 0).should be_true
+        (@pdata["a_cenergy"].to_f > 0).should be_true
+        (@pdata["cost_saved"].to_f > 0).should be_true
+        (@pdata["solar"].to_f > 0).should be_true
       end    
     end
   end
